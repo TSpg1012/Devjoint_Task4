@@ -4,15 +4,23 @@ import { AppService } from './app.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ShowsModule } from './shows/shows.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CleanupService } from './cleanup/cleanup.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { NotificationsService } from './notifications/notifications.service';
 
 @Module({
-  imports: [CacheModule.register({
+  imports: [
+    EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
+    CacheModule.register({
       isGlobal: true,
-      ttl: 60000, 
+      ttl: 60000,
     }),
     PrismaModule,
-    ShowsModule],
+    ShowsModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CleanupService, NotificationsService],
 })
 export class AppModule {}

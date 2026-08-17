@@ -2,13 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShowDto } from './dto/create-show.dto';
 import { UpdateShowDto } from './dto/update-show.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ShowsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async create(dto: CreateShowDto) {
-    return this.prisma.show.create({ data: dto });
+    const show = await this.prisma.show.create({ data: dto });
+    this.eventEmitter.emit('show.created', { id: show.id, title: show.title });
+    return show;
   }
 
   async findAll() {
