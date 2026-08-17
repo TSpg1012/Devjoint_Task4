@@ -8,14 +8,23 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CleanupService } from './cleanup/cleanup.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsService } from './notifications/notifications.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+    }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 60000,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        ttl: parseInt(config.get('CACHE_TTL') ?? '60000'),
+      }),
     }),
     PrismaModule,
     ShowsModule,
